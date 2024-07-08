@@ -137,7 +137,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `two_genes` has two copies of the gene, and
         * everyone not in `one_gene` or `two_gene` does not have the gene, and
         * everyone in set `have_trait` has the trait, and
-        * everyone not in set` have_trait` does not have the trait.
+        * everyone not in set `have_trait` does not have the trait.
     """
     probability = 1
 
@@ -150,7 +150,23 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         if mother is None and father is None:
             probability *= PROBS["gene"][num_genes] * PROBS["trait"][num_genes][has_trait]
         else:
-            pass  # Handle case when parents are known
+            mother_genes = 2 if mother in two_genes else 1 if mother in one_gene else 0
+            father_genes = 2 if father in two_genes else 1 if father in one_gene else 0
+
+            if num_genes == 2:
+                mother_prob = 1 - PROBS["mutation"] if mother_genes == 2 else 0.5 if mother_genes == 1 else PROBS["mutation"]
+                father_prob = 1 - PROBS["mutation"] if father_genes == 2 else 0.5 if father_genes == 1 else PROBS["mutation"]
+                probability *= mother_prob * father_prob
+            elif num_genes == 1:
+                mother_prob = PROBS["mutation"] if mother_genes == 0 else 0.5 if mother_genes == 1 else 1 - PROBS["mutation"]
+                father_prob = PROBS["mutation"] if father_genes == 0 else 0.5 if father_genes == 1 else 1 - PROBS["mutation"]
+                probability *= mother_prob * (1 - father_prob) + (1 - mother_prob) * father_prob
+            else:
+                mother_prob = PROBS["mutation"] if mother_genes == 0 else 0.5 if mother_genes == 1 else 1 - PROBS["mutation"]
+                father_prob = PROBS["mutation"] if father_genes == 0 else 0.5 if father_genes == 1 else 1 - PROBS["mutation"]
+                probability *= (1 - mother_prob) * (1 - father_prob)
+
+            probability *= PROBS["trait"][num_genes][has_trait]
 
     return probability
 
